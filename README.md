@@ -185,6 +185,46 @@ vercel
 - **Prettier**: Code style consistency
 - **shadcn/ui**: Consistent component library
 
+## 🚀 Deployment
+
+### Deploy to Vercel (Recommended)
+
+1. **Fork/Clone this repository**
+
+2. **Set up Zapier Webhooks:**
+   - Create your Zapier workflows
+   - Get your webhook URLs from Zapier
+
+3. **Deploy to Vercel:**
+   
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
+   
+   - Connect your GitHub repository
+   - Add environment variables in Vercel dashboard:
+     - `NEXT_PUBLIC_ZAPIER_QR_WEBHOOK_URL` - Your QR generation webhook
+     - `NEXT_PUBLIC_ZAPIER_CHECKIN_WEBHOOK_URL` - Your check-in webhook
+
+4. **Alternative: Vercel CLI**
+   ```bash
+   npm i -g vercel
+   vercel --prod
+   ```
+
+### Environment Variables for Production
+
+```bash
+# Required for Vercel deployment
+NEXT_PUBLIC_ZAPIER_QR_WEBHOOK_URL=https://hooks.zapier.com/hooks/catch/YOUR_ID/YOUR_QR_HOOK/
+NEXT_PUBLIC_ZAPIER_CHECKIN_WEBHOOK_URL=https://hooks.zapier.com/hooks/catch/YOUR_ID/YOUR_CHECKIN_HOOK/
+```
+
+### Build Verification
+
+```bash
+npm run build  # Test production build locally
+npm start      # Run production build locally
+```
+
 ## 🤝 Contributing
 
 1. Fork the repository
