@@ -102,7 +102,7 @@ export default function CheckInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/50 p-4">
       <div className="container mx-auto max-w-3xl">
         {/* Page Toggle */}
         <div className="mb-8">
@@ -116,7 +116,7 @@ export default function CheckInPage() {
               Generate QR
             </Button>
             <Button
-              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full px-6 py-2"
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 py-2"
               size="sm"
             >
               Scan QR
@@ -183,17 +183,17 @@ export default function CheckInPage() {
                 </div>
 
                 {(identificationNotes || locationNotes) && (
-                  <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <h4 className="font-medium text-blue-900 mb-2">Check-in Notes</h4>
+                                      <div className="mt-6 p-4 bg-secondary rounded-lg border border-border">
+                      <h4 className="font-medium text-secondary-foreground mb-2">Check-in Notes</h4>
                     {identificationNotes && (
-                      <p className="text-sm text-blue-800 mb-1">
-                        <strong>Identification:</strong> {identificationNotes}
-                      </p>
-                    )}
-                    {locationNotes && (
-                      <p className="text-sm text-blue-800">
-                        <strong>Location:</strong> {locationNotes}
-                      </p>
+                                              <p className="text-sm text-secondary-foreground mb-1">
+                          <strong>Identification:</strong> {identificationNotes}
+                        </p>
+                      )}
+                      {locationNotes && (
+                        <p className="text-sm text-secondary-foreground">
+                          <strong>Location:</strong> {locationNotes}
+                        </p>
                     )}
                   </div>
                 )}
@@ -242,8 +242,8 @@ export default function CheckInPage() {
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label className="text-sm font-medium text-muted-foreground">Purpose of Visit</Label>
-                    <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                      <p className="text-blue-900 font-medium">{visitorData.purpose}</p>
+                                          <div className="bg-secondary border border-border p-4 rounded-lg">
+                        <p className="text-secondary-foreground font-medium">{visitorData.purpose}</p>
                     </div>
                   </div>
                 </div>
@@ -294,7 +294,7 @@ export default function CheckInPage() {
                   <div className="mt-2">
                     <Button
                       onClick={retryCheckIn}
-                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full px-4 py-2 mr-2"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-4 py-2 mr-2"
                       size="sm"
                     >
                       Retry

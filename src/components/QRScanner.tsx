@@ -179,7 +179,7 @@ export function QRScanner({ onScanSuccess, onScanError, className }: QRScannerPr
             </div>
             <Button 
               onClick={initializeScanner} 
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" 
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
               size="lg"
             >
               Start Camera
