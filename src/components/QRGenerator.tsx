@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Copy, Download, QrCode, Mail, CheckCircle, AlertCircle } from "lucide-react"
+import { Copy, Download, QrCode, Webhook, CheckCircle, AlertCircle } from "lucide-react"
 import { VisitorData } from "@/types"
 import { toast } from "sonner"
 
@@ -19,9 +19,9 @@ interface QRGeneratorProps {
 export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
   const [qrCodeDataURL, setQRCodeDataURL] = useState<string>("")
   const [isGenerating, setIsGenerating] = useState(true)
-  const [isSendingEmail, setIsSendingEmail] = useState(false)
-  const [emailSent, setEmailSent] = useState(false)
-  const [emailError, setEmailError] = useState<string>("")
+  const [isSendingToZapier, setIsSendingToZapier] = useState(false)
+  const [zapierSent, setZapierSent] = useState(false)
+  const [zapierError, setZapierError] = useState<string>("")
   const [error, setError] = useState<string>("")
 
   useEffect(() => {
@@ -50,18 +50,18 @@ export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
       
       setQRCodeDataURL(dataURL)
       
-      // Only send email once per visitor (using visitor data as unique key)
+      // Send to Zapier webhook (only once per visitor)
       const visitorKey = `${visitorData.visitorEmail}_${visitorData.id}`
-      const sentEmails = JSON.parse(sessionStorage.getItem('sentQREmails') || '[]')
+      const sentWebhooks = JSON.parse(sessionStorage.getItem('sentZapierQR') || '[]')
       
-      if (!sentEmails.includes(visitorKey)) {
-        sentEmails.push(visitorKey)
-        sessionStorage.setItem('sentQREmails', JSON.stringify(sentEmails))
-        await sendQRCodeEmail(dataURL)
+      if (!sentWebhooks.includes(visitorKey)) {
+        sentWebhooks.push(visitorKey)
+        sessionStorage.setItem('sentZapierQR', JSON.stringify(sentWebhooks))
+        await sendToZapierWebhook(dataURL)
       } else {
-        // Email already sent for this visitor
-        setEmailSent(true)
-        toast.success(`QR code was already sent to ${visitorData.visitorEmail}`)
+        // Already sent to Zapier for this visitor
+        setZapierSent(true)
+        toast.success(`Visitor data already processed for ${visitorData.visitorName}`)
       }
       
     } catch (err) {
@@ -72,43 +72,59 @@ export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
     }
   }
 
-  const sendQRCodeEmail = async (qrCodeDataUrl: string) => {
+  const sendToZapierWebhook = async (qrCodeDataUrl: string) => {
     try {
-      setIsSendingEmail(true)
-      setEmailError("")
+      setIsSendingToZapier(true)
+      setZapierError("")
       
-      const response = await fetch('/api/send-qr-code', {
+      // Get webhook URL from environment variable
+      const webhookUrl = process.env.NEXT_PUBLIC_ZAPIER_QR_WEBHOOK_URL
+      
+      if (!webhookUrl) {
+        throw new Error('Zapier webhook URL not configured')
+      }
+
+      const payload = {
+        // Visitor information
+        visitorName: visitorData.visitorName,
+        visitorCompany: visitorData.visitorCompany,
+        visitorEmail: visitorData.visitorEmail,
+        purpose: visitorData.purpose,
+        hostEmail: visitorData.hostEmail,
+        createdAt: visitorData.createdAt,
+        visitorId: visitorData.id,
+        
+        // QR Code data
+        qrCodeDataUrl: qrCodeDataUrl,
+        qrCodeData: JSON.stringify(visitorData),
+        
+        // Additional metadata
+        timestamp: new Date().toISOString(),
+        action: 'qr_code_generated'
+      }
+
+      const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          visitorData,
-          qrCodeDataUrl
-        }),
+        body: JSON.stringify(payload),
       })
 
-      const result = await response.json()
-
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to send email')
+        throw new Error(`Webhook failed with status: ${response.status}`)
       }
 
-      setEmailSent(true)
-      
-      if (result.duplicate) {
-        toast.success(`QR code was already sent to ${visitorData.visitorEmail}`)
-      } else {
-        toast.success(`QR code sent successfully to ${visitorData.visitorEmail}!`)
-      }
+      setZapierSent(true)
+      toast.success(`✅ Visitor data sent to automation system! Email will be sent to ${visitorData.visitorEmail}`)
       
     } catch (err) {
-      console.error('Email sending error:', err)
-      const errorMessage = err instanceof Error ? err.message : 'Failed to send email'
-      setEmailError(errorMessage)
-      toast.error(`Failed to send email to ${visitorData.visitorEmail}. You can still download/copy the QR code.`)
+      console.error('Zapier webhook error:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send to automation system'
+      setZapierError(errorMessage)
+      toast.error(`Failed to send to automation system. You can still use the QR code manually.`)
     } finally {
-      setIsSendingEmail(false)
+      setIsSendingToZapier(false)
     }
   }
 
@@ -145,6 +161,12 @@ export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
     } catch (err) {
       console.error('Download failed:', err)
       toast.error("Failed to download QR code.")
+    }
+  }
+
+  const retrySendToZapier = () => {
+    if (qrCodeDataURL) {
+      sendToZapierWebhook(qrCodeDataURL)
     }
   }
 
@@ -192,6 +214,7 @@ export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
           </div>
           <div className="bg-muted p-3 rounded-lg">
             <p className="text-sm"><strong>Purpose:</strong> {visitorData.purpose}</p>
+            <p className="text-sm mt-1"><strong>Host:</strong> {visitorData.hostEmail}</p>
           </div>
         </div>
 
@@ -219,33 +242,45 @@ export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
           </div>
         )}
 
-        {/* Email Status */}
-        {isSendingEmail && (
+        {/* Zapier Webhook Status */}
+        {isSendingToZapier && (
           <Alert>
-            <Mail className="h-4 w-4" />
+            <Webhook className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              Sending QR code to <strong>{visitorData.visitorEmail}</strong>...
+              Sending visitor data to automation system...
             </AlertDescription>
           </Alert>
         )}
         
-        {emailSent && !isSendingEmail && (
+        {zapierSent && !isSendingToZapier && (
           <Alert className="border-green-200 bg-green-50">
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-sm text-green-800">
-              ✅ QR code successfully sent to <strong>{visitorData.visitorEmail}</strong>! 
-              The visitor should present it upon arrival for check-in.
+              ✅ Visitor data sent to automation system! An email with the QR code will be automatically sent to <strong>{visitorData.visitorEmail}</strong>.
             </AlertDescription>
           </Alert>
         )}
         
-        {emailError && !isSendingEmail && (
+        {zapierError && !isSendingToZapier && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="text-sm">
-              ❌ Failed to send email to <strong>{visitorData.visitorEmail}</strong>: {emailError}
+              ❌ Failed to send to automation system: {zapierError}
               <br />
-              <span className="mt-1 block">You can manually send the QR code using the copy/download buttons above.</span>
+              <div className="mt-2 flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={retrySendToZapier}
+                  className="flex items-center gap-2"
+                >
+                  <Webhook className="h-3 w-3" />
+                  Retry
+                </Button>
+                <span className="text-xs text-muted-foreground self-center">
+                  You can still use the QR code manually
+                </span>
+              </div>
             </AlertDescription>
           </Alert>
         )}

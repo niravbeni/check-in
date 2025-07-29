@@ -1,15 +1,16 @@
-# Visitor Check-In QR Code System
+# QR Code Visitor Check-In System
 
-A professional Next.js application that provides a complete visitor management solution using QR codes, built with shadcn/ui for enterprise-grade design.
+A professional Next.js application that provides a streamlined visitor management solution using QR codes and Zapier automation, built with shadcn/ui for modern design.
 
 ## 🚀 Features
 
-- **QR Code Generation**: Hosts can create visitor invites with embedded meeting details
-- **Camera Scanning**: Guest services can scan QR codes using device cameras
-- **Email Notifications**: Automatic confirmation emails sent to hosts upon check-in
-- **Professional UI**: Built with shadcn/ui for consistent, accessible design
+- **QR Code Generation**: Create visitor QR codes with embedded meeting details
+- **Camera Scanning**: Scan QR codes using device cameras for instant check-in
+- **Zapier Automation**: Automatic email notifications and workflows via Zapier webhooks
+- **Professional UI**: Modern, clean interface built with shadcn/ui components
 - **Mobile Responsive**: Optimized for all device sizes and screen orientations
 - **Real-time Validation**: Form validation and error handling throughout the flow
+- **Two-Page System**: Simplified workflow - Create QR codes and Scan QR codes
 
 ## 🛠 Tech Stack
 
@@ -17,13 +18,13 @@ A professional Next.js application that provides a complete visitor management s
 - **Styling**: Tailwind CSS + shadcn/ui components
 - **Forms**: React Hook Form with Zod validation
 - **QR Codes**: qrcode (generation) + html5-qrcode (scanning)
-- **Email**: Resend API for notifications
+- **Automation**: Zapier webhooks for email notifications
 - **TypeScript**: Full type safety throughout
 
 ## 📋 Prerequisites
 
 - Node.js 18+ and npm
-- A [Resend](https://resend.com) account for email functionality
+- A [Zapier](https://zapier.com) account for email automation
 - Modern browser with camera support for QR scanning
 
 ## 🚀 Quick Start
@@ -31,7 +32,7 @@ A professional Next.js application that provides a complete visitor management s
 ### 1. Clone and Install
 ```bash
 git clone <your-repo-url>
-cd visitor-checkin
+cd check-in
 npm install
 ```
 
@@ -39,201 +40,172 @@ npm install
 Create a `.env.local` file in the root directory:
 
 ```env
-# Resend API Configuration
-RESEND_API_KEY=re_your_api_key_here
-FROM_EMAIL=noreply@yourdomain.com
+# Zapier Webhook URLs
+NEXT_PUBLIC_ZAPIER_QR_WEBHOOK_URL=https://hooks.zapier.com/hooks/catch/123456/abcdef/
+NEXT_PUBLIC_ZAPIER_CHECKIN_WEBHOOK_URL=https://hooks.zapier.com/hooks/catch/123456/ghijkl/
 ```
 
-**To get your Resend API key:**
-1. Visit [resend.com](https://resend.com)
-2. Sign up (free plan includes 100 emails/day)
-3. Go to API Keys section
-4. Generate a new API key
-5. Add it to your `.env.local` file
+**To set up Zapier webhooks:**
+1. Visit [zapier.com](https://zapier.com) and sign up
+2. Create a new Zap with "Webhook by Zapier" as the trigger
+3. Choose "Catch Hook" and copy the webhook URL
+4. Set up your automation flow (email, Slack, etc.)
+5. Create separate Zaps for QR generation and check-in events
 
-### 3. Run Development Server
+### 3. Development
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the application.
+Visit `http://localhost:3000` to see the application.
 
 ## 📖 How to Use
 
-### For Hosts (Creating Visitor Invites)
-
-1. **Navigate to Home Page** → Click "Create Visitor Invite"
-2. **Fill Visitor Information**:
+### For Meeting Organizers (Create QR Codes)
+1. Go to **Create QR Code** page
+2. Fill in visitor details:
    - Visitor name and company
-   - Purpose of visit (detailed description)
-   - Meeting room/location
-3. **Add Host Details**:
-   - Your name
-   - Your email (for notifications)
-4. **Generate QR Code** → Share with your visitor
+   - Visitor email address  
+   - Purpose of visit
+   - Host email for notifications
+3. Submit to generate QR code
+4. System automatically sends QR code to visitor via Zapier automation
 
-### For Guest Services (Checking In Visitors)
+### For Guest Services (Scan QR Codes)
+1. Go to **Scan QR Code** page
+2. Position visitor's QR code within camera frame
+3. Add optional identification notes (e.g., "wearing blue jacket")
+4. Add optional location notes (e.g., "seated in reception area")
+5. Complete check-in to notify host via Zapier automation
 
-1. **Navigate to Home Page** → Click "Start QR Scanner"
-2. **Allow Camera Permission**
-3. **Scan Visitor's QR Code**
-4. **Complete Check-In Form**:
-   - Verify visitor identity
-   - Record check-in location
-   - Add staff member name
-5. **Submit** → Host receives automatic email notification
+## 🔗 Zapier Integration
+
+The application sends webhook data to Zapier for automated email workflows:
+
+### QR Code Generation Webhook Data
+```json
+{
+  "visitorName": "John Doe",
+  "visitorCompany": "Acme Corp",
+  "visitorEmail": "john@acme.com",
+  "purpose": "Product demo meeting",
+  "hostEmail": "host@company.com",
+  "qrCodeDataUrl": "data:image/png;base64,iVBOR...",
+  "qrCodeData": "{visitor object as JSON}",
+  "createdAt": "2024-01-01T10:00:00Z",
+  "visitorId": "uuid",
+  "action": "qr_code_generated"
+}
+```
+
+### Check-in Webhook Data
+```json
+{
+  "visitorName": "John Doe",
+  "visitorCompany": "Acme Corp", 
+  "visitorEmail": "john@acme.com",
+  "purpose": "Product demo meeting",
+  "hostEmail": "host@company.com",
+  "checkedInAt": "2024-01-01T10:30:00Z",
+  "checkedInTime": "1/1/2024, 10:30:00 AM",
+  "identificationNotes": "Wearing blue jacket",
+  "locationNotes": "Seated in reception area",
+  "visitorId": "uuid",
+  "action": "visitor_checked_in"
+}
+```
 
 ## 🏗 Project Structure
 
 ```
-visitor-checkin/
-├── src/
-│   ├── app/                    # Next.js App Router pages
-│   │   ├── api/
-│   │   │   └── send-confirmation/  # Email API endpoint
-│   │   ├── create/             # Host: Create visitor invite
-│   │   ├── checkin/            # Guest Services: QR scanner & check-in
-│   │   ├── confirmation/       # Success/completion page
-│   │   ├── layout.tsx          # Root layout with Toaster
-│   │   └── page.tsx            # Landing page
-│   ├── components/
-│   │   ├── ui/                 # shadcn/ui components
-│   │   ├── Layout/
-│   │   │   └── StepLayout.tsx  # Consistent page layout
-│   │   ├── QRGenerator.tsx     # QR code generation
-│   │   ├── QRScanner.tsx       # Camera-based scanning
-│   │   ├── CheckInForm.tsx     # Guest services form
-│   │   ├── VisitorSummary.tsx  # Confirmation display
-│   │   └── StepProgress.tsx    # Progress indicator
-│   ├── types/
-│   │   └── index.ts            # TypeScript interfaces
-│   └── lib/
-│       └── utils.ts            # Utility functions
+src/
+├── app/                    # Next.js App Router pages
+│   ├── create/            # QR code generation page
+│   ├── checkin/           # QR code scanning page
+│   └── layout.tsx         # Root layout
+├── components/            # React components
+│   ├── QRGenerator.tsx    # QR code generation component
+│   ├── QRScanner.tsx      # QR code scanning component
+│   └── ui/               # shadcn/ui components
+├── types/                # TypeScript type definitions
+└── lib/                  # Utility functions
 ```
 
-## 🎨 Components Overview
+## 🎨 UI Components
 
-### Core Components
+Built with [shadcn/ui](https://ui.shadcn.com/) for consistent, accessible design:
 
-- **`QRGenerator`**: Generates QR codes with visitor data, includes copy/download functionality
-- **`QRScanner`**: Camera interface for scanning QR codes with permission handling
-- **`CheckInForm`**: Form for guest services to complete visitor check-in
-- **`VisitorSummary`**: Professional summary of completed check-in
-- **`StepProgress`**: Visual progress indicator across the 3-step flow
-
-### Layout Components
-
-- **`StepLayout`**: Consistent layout wrapper with progress tracking
-- **Shadcn/ui Components**: Professional UI components throughout
-
-## 🔧 Configuration
-
-### Email Templates
-The system sends HTML emails with:
-- Professional styling and branding
-- Complete visitor and check-in details
-- Mobile-responsive design
-- Both HTML and plain text versions
-
-### QR Code Settings
-- **Error Correction**: High level for reliability
-- **Size**: 300px for optimal scanning
-- **Data Format**: JSON with visitor information
-- **Validation**: Built-in data integrity checks
-
-## 🚀 Deployment
-
-### Vercel (Recommended)
-```bash
-# Build the project
-npm run build
-
-# Deploy to Vercel
-npx vercel
-
-# Add environment variables in Vercel dashboard:
-# - RESEND_API_KEY
-# - FROM_EMAIL
-```
-
-### Other Platforms
-The app can be deployed to any platform supporting Next.js:
-- Netlify
-- Railway
-- DigitalOcean App Platform
-- Self-hosted with Docker
-
-## 🔒 Security & Privacy
-
-- **No Data Storage**: Visitor information is not stored in databases
-- **QR Code Security**: Data is embedded directly in QR codes
-- **Email Encryption**: All email communication is encrypted
-- **Camera Permissions**: Proper handling of camera access requests
-- **Input Validation**: All forms include comprehensive validation
+- **Cards**: Structured content display
+- **Forms**: Input validation with real-time feedback  
+- **Buttons**: Interactive elements with loading states
+- **Alerts**: Status messages and error handling
+- **Badges**: Information tags and labels
+- **Toasts**: Success/error notifications
 
 ## 📱 Mobile Optimization
 
 - **Responsive Design**: Works on all screen sizes
 - **Touch-Friendly**: Large buttons and touch targets
-- **Camera Integration**: Optimized for mobile QR scanning
-- **Fast Loading**: Optimized bundle size and lazy loading
+- **Camera Access**: Optimized QR scanning on mobile devices
+- **Performance**: Fast loading and smooth interactions
 
-## 🔄 Development Workflow
+## 🚀 Deployment
 
-### Adding New Features
-1. Create TypeScript interfaces in `src/types/`
-2. Build reusable components in `src/components/`
-3. Add pages in `src/app/`
-4. Update navigation and routing as needed
-
-### Available Scripts
+### Vercel (Recommended)
 ```bash
-npm run dev          # Development server
-npm run build        # Production build
-npm run start        # Start production server
-npm run lint         # Run ESLint
-npm run type-check   # TypeScript checking
+npm i -g vercel
+vercel
 ```
 
-## 🐛 Troubleshooting
+### Manual Deployment
+1. Build the application: `npm run build`
+2. Deploy the `.next` folder to your hosting provider
+3. Set environment variables on your hosting platform
+4. Ensure camera permissions are available (HTTPS required)
 
-### Common Issues
+## 🔒 Security
 
-**QR Scanner Not Working**
-- Ensure HTTPS (required for camera access)
-- Check browser camera permissions
-- Try different browsers (Chrome/Safari recommended)
+- **Environment Variables**: Sensitive data stored securely
+- **Client-Side Validation**: Input sanitization and validation
+- **Webhook Security**: URLs can be kept private in environment variables
+- **HTTPS Required**: Camera access requires secure connection
 
-**Email Not Sending**
-- Verify RESEND_API_KEY in environment variables
-- Check FROM_EMAIL format and domain verification
-- Review Resend dashboard for error logs
+## 🛠 Development
 
-**Build Errors**
-- Clear `.next` folder and `node_modules`
-- Run `npm install` and `npm run build`
-- Check TypeScript errors with `npm run type-check`
+### Available Scripts
+- `npm run dev`: Start development server
+- `npm run build`: Build for production  
+- `npm run start`: Start production server
+- `npm run lint`: Run ESLint
+- `npm run type-check`: Run TypeScript checks
 
-## 📄 License
-
-MIT License - feel free to use this project for personal or commercial purposes.
+### Code Quality
+- **TypeScript**: Full type safety
+- **ESLint**: Code linting and formatting
+- **Prettier**: Code style consistency
+- **shadcn/ui**: Consistent component library
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes and test thoroughly
+4. Commit your changes: `git commit -m 'Add amazing feature'`
+5. Push to the branch: `git push origin feature/amazing-feature`
+6. Open a Pull Request
 
-## 📞 Support
+## 📄 License
 
-For issues or questions:
-1. Check the troubleshooting section above
-2. Review [Next.js documentation](https://nextjs.org/docs)
-3. Check [shadcn/ui documentation](https://ui.shadcn.com)
-4. Open an issue in the repository
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙋‍♂️ Support
+
+For support and questions:
+
+- Create an issue in this repository
+- Check the [Zapier documentation](https://zapier.com/help) for webhook setup
+- Review [Next.js documentation](https://nextjs.org/docs) for framework questions
 
 ---
 
-**Built with ❤️ using Next.js and shadcn/ui**
+**Built with ❤️ using Next.js, shadcn/ui, and Zapier automation**
