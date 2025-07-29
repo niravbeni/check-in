@@ -20,8 +20,21 @@ export function QRScanner({ onScanSuccess, onScanError, className }: QRScannerPr
   const [error, setError] = useState<string>("")
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null)
   const [scannerInitialized, setScannerInitialized] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const scannerElementId = "qr-scanner"
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkIsMobile = () => {
+      const userAgent = navigator.userAgent.toLowerCase()
+      const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/.test(userAgent)
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+      setIsMobile(isMobileUA || isTouchDevice)
+    }
+    
+    checkIsMobile()
+  }, [])
 
   useEffect(() => {
     // Clean up scanner on unmount
@@ -59,7 +72,7 @@ export function QRScanner({ onScanSuccess, onScanError, className }: QRScannerPr
         
         const stream = await navigator.mediaDevices.getUserMedia({ 
           video: { 
-            facingMode: "user", // Try front camera first for laptops
+            facingMode: isMobile ? "environment" : "user", // Back camera for mobile, front for desktop
             width: { ideal: 1280 },
             height: { ideal: 720 }
           } 
@@ -88,7 +101,7 @@ export function QRScanner({ onScanSuccess, onScanError, className }: QRScannerPr
       try {
         // Start camera scanning
         await scanner.start(
-          { facingMode: "user" }, // Camera constraints
+          { facingMode: isMobile ? "environment" : "user" }, // Back camera for mobile, front for desktop
           config,
           (decodedText: string, result: Html5QrcodeResult) => {
             handleScanSuccess(decodedText, result)
@@ -197,7 +210,7 @@ export function QRScanner({ onScanSuccess, onScanError, className }: QRScannerPr
         {/* Scanner element */}
         <div 
           id={scannerElementId} 
-          className="w-full [&_video]:transform [&_video]:scale-x-[-1] [&_video]:rounded-lg"
+          className={`w-full [&_video]:rounded-lg ${!isMobile ? '[&_video]:transform [&_video]:scale-x-[-1]' : ''}`}
         ></div>
       </div>
     </div>
