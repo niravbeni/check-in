@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import QRCode from "qrcode"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Copy, Download, QrCode, Webhook, CheckCircle, AlertCircle } from "lucide-react"
 import { VisitorData } from "@/types"
 import { toast } from "sonner"
+import Image from "next/image"
 
 interface QRGeneratorProps {
   visitorData: VisitorData
@@ -24,11 +25,77 @@ export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
   const [zapierError, setZapierError] = useState<string>("")
   const [error, setError] = useState<string>("")
 
-  useEffect(() => {
-    generateQRCode()
-  }, [visitorData.id]) // Generate QR when visitor data changes
+  const sendToZapierWebhook = useCallback(async (qrCodeDataUrl: string) => {
+    try {
+      setIsSendingToZapier(true)
+      setZapierError("")
+      
+      // Get webhook URL from environment variable
+      const webhookUrl = process.env.NEXT_PUBLIC_ZAPIER_QR_WEBHOOK_URL
+      
+      if (!webhookUrl) {
+        throw new Error('Zapier webhook URL not configured')
+      }
 
-  const generateQRCode = async () => {
+      // Create form data for Webhooks by Zapier
+      const formData = new FormData()
+      
+      // Visitor information
+      formData.append('visitorName', visitorData.visitorName)
+      formData.append('visitorCompany', visitorData.visitorCompany)
+      formData.append('visitorEmail', visitorData.visitorEmail)
+      formData.append('purpose', visitorData.purpose)
+      formData.append('hostEmail', visitorData.hostEmail)
+      formData.append('createdAt', visitorData.createdAt)
+      formData.append('visitorId', visitorData.id)
+      
+      // QR Code data
+      formData.append('qrCodeDataUrl', qrCodeDataUrl)
+      formData.append('qrCodeData', JSON.stringify(visitorData))
+      
+      // Convert base64 to file for email attachment
+      const imageResponse = await fetch(qrCodeDataUrl)
+      const blob = await imageResponse.blob()
+      const fileName = `visitor-qr-${visitorData.id}.png`
+      
+      // Try multiple formats for Zapier compatibility
+      formData.append('qrCodeFile', blob, fileName)
+      
+      // Also send as base64 without data URL prefix for Zapier
+      const base64Only = qrCodeDataUrl.split(',')[1]
+      formData.append('qrCodeBase64', base64Only)
+      formData.append('qrCodeFilename', fileName)
+      formData.append('qrCodeMimeType', 'image/png')
+      
+
+      
+      // Additional metadata
+      formData.append('timestamp', new Date().toISOString())
+      formData.append('action', 'qr_code_generated')
+
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error(`Webhook failed with status: ${response.status}`)
+      }
+
+      setZapierSent(true)
+      toast.success(`✅ Visitor data sent to automation system! Email will be sent to ${visitorData.visitorEmail}`)
+      
+    } catch (err) {
+      console.error('Zapier webhook error:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send to automation system'
+      setZapierError(errorMessage)
+      toast.error(`Failed to send to automation system. You can still use the QR code manually.`)
+    } finally {
+      setIsSendingToZapier(false)
+    }
+  }, [visitorData])
+
+  const generateQRCode = useCallback(async () => {
     try {
       setIsGenerating(true)
       setError("")
@@ -70,63 +137,11 @@ export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
     } finally {
       setIsGenerating(false)
     }
-  }
+  }, [visitorData, sendToZapierWebhook])
 
-  const sendToZapierWebhook = async (qrCodeDataUrl: string) => {
-    try {
-      setIsSendingToZapier(true)
-      setZapierError("")
-      
-      // Get webhook URL from environment variable
-      const webhookUrl = process.env.NEXT_PUBLIC_ZAPIER_QR_WEBHOOK_URL
-      
-      if (!webhookUrl) {
-        throw new Error('Zapier webhook URL not configured')
-      }
-
-      const payload = {
-        // Visitor information
-        visitorName: visitorData.visitorName,
-        visitorCompany: visitorData.visitorCompany,
-        visitorEmail: visitorData.visitorEmail,
-        purpose: visitorData.purpose,
-        hostEmail: visitorData.hostEmail,
-        createdAt: visitorData.createdAt,
-        visitorId: visitorData.id,
-        
-        // QR Code data
-        qrCodeDataUrl: qrCodeDataUrl,
-        qrCodeData: JSON.stringify(visitorData),
-        
-        // Additional metadata
-        timestamp: new Date().toISOString(),
-        action: 'qr_code_generated'
-      }
-
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
-
-      if (!response.ok) {
-        throw new Error(`Webhook failed with status: ${response.status}`)
-      }
-
-      setZapierSent(true)
-      toast.success(`✅ Visitor data sent to automation system! Email will be sent to ${visitorData.visitorEmail}`)
-      
-    } catch (err) {
-      console.error('Zapier webhook error:', err)
-      const errorMessage = err instanceof Error ? err.message : 'Failed to send to automation system'
-      setZapierError(errorMessage)
-      toast.error(`Failed to send to automation system. You can still use the QR code manually.`)
-    } finally {
-      setIsSendingToZapier(false)
-    }
-  }
+  useEffect(() => {
+    generateQRCode()
+  }, [generateQRCode])
 
   const copyQRCode = async () => {
     try {
@@ -193,10 +208,13 @@ export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
             <Skeleton className="h-[300px] w-[300px] rounded-lg" />
           ) : (
             <div className="border-2 border-muted rounded-lg p-4 bg-white">
-              <img 
-                src={qrCodeDataURL} 
+              <Image
+                src={qrCodeDataURL}
                 alt="Visitor QR Code"
+                width={300}
+                height={300}
                 className="w-full h-auto max-w-[300px]"
+                unoptimized={true}
               />
             </div>
           )}

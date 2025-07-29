@@ -11,8 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { QRScanner } from "@/components/QRScanner"
 import { VisitorData } from "@/types"
 import { toast } from "sonner"
-import { ArrowLeft, CheckCircle, User, Building, Clock, Webhook, Scan, UserCheck, AlertTriangle } from "lucide-react"
-import Link from "next/link"
+
 
 export default function CheckInPage() {
   const [visitorData, setVisitorData] = useState<VisitorData | null>(null)
@@ -47,34 +46,31 @@ export default function CheckInPage() {
         throw new Error('Check-in webhook URL not configured')
       }
 
-      // Prepare check-in data for Zapier webhook
-      const checkInData = {
-        // Visitor information
-        visitorName: visitorData.visitorName,
-        visitorCompany: visitorData.visitorCompany,
-        visitorEmail: visitorData.visitorEmail,
-        purpose: visitorData.purpose,
-        hostEmail: visitorData.hostEmail,
-        visitorId: visitorData.id,
-        
-        // Check-in details
-        checkedInAt: new Date().toISOString(),
-        checkedInTime: new Date().toLocaleString(),
-        identificationNotes: identificationNotes || null,
-        locationNotes: locationNotes || null,
-        
-        // Additional metadata
-        action: 'visitor_checked_in',
-        timestamp: new Date().toISOString()
-      }
+      // Create form data for Webhooks by Zapier
+      const formData = new FormData()
+      
+      // Visitor information
+      formData.append('visitorName', visitorData.visitorName)
+      formData.append('visitorCompany', visitorData.visitorCompany)
+      formData.append('visitorEmail', visitorData.visitorEmail)
+      formData.append('purpose', visitorData.purpose)
+      formData.append('hostEmail', visitorData.hostEmail)
+      formData.append('visitorId', visitorData.id)
+      
+      // Check-in details
+      formData.append('checkedInAt', new Date().toISOString())
+      formData.append('checkedInTime', new Date().toLocaleString())
+      formData.append('identificationNotes', identificationNotes || '')
+      formData.append('locationNotes', locationNotes || '')
+      
+      // Additional metadata
+      formData.append('action', 'visitor_checked_in')
+      formData.append('timestamp', new Date().toISOString())
 
       // Send to Zapier webhook
       const response = await fetch(webhookUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(checkInData)
+        body: formData
       })
 
       if (!response.ok) {
@@ -101,10 +97,6 @@ export default function CheckInPage() {
     setWebhookError("")
   }
 
-  const handleBackHome = () => {
-    router.push("/")
-  }
-
   const retryCheckIn = () => {
     handleCheckIn()
   }
@@ -112,18 +104,31 @@ export default function CheckInPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4">
       <div className="container mx-auto max-w-3xl">
+        {/* Page Toggle */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center bg-white rounded-full border border-gray-200 p-1 max-w-md mx-auto">
+            <Button
+              variant="ghost"
+              className="flex-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full px-6 py-2"
+              size="sm"
+              onClick={() => router.push('/')}
+            >
+              Generate QR
+            </Button>
+            <Button
+              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full px-6 py-2"
+              size="sm"
+            >
+              Scan QR
+            </Button>
+          </div>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
-          <Link href="/" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors mb-6">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Link>
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mb-4">
-              <Scan className="h-8 w-8 text-white" />
-            </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Visitor Check-In</h1>
-            <p className="text-muted-foreground text-lg">Scan QR code to check in visitors and notify hosts</p>
+            <p className="text-muted-foreground text-lg">Scan visitor QR codes and complete check-in process</p>
           </div>
         </div>
 
@@ -133,9 +138,6 @@ export default function CheckInPage() {
             <Card className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                    <CheckCircle className="h-8 w-8 text-green-600" />
-                  </div>
                   <h2 className="text-2xl font-bold text-green-800 mb-2">Check-in Successful!</h2>
                   <p className="text-green-700">Host has been automatically notified via email</p>
                 </div>
@@ -144,8 +146,7 @@ export default function CheckInPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <UserCheck className="h-5 w-5 text-green-600" />
+                <CardTitle>
                   Visitor Details
                 </CardTitle>
               </CardHeader>
@@ -162,21 +163,18 @@ export default function CheckInPage() {
                   <div className="space-y-2">
                     <Label className="text-sm text-muted-foreground">Company</Label>
                     <div className="flex items-center gap-2">
-                      <Building className="h-4 w-4 text-muted-foreground" />
                       <span className="font-medium">{visitorData?.visitorCompany}</span>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm text-muted-foreground">Check-in Time</Label>
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">{new Date().toLocaleString()}</span>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm text-muted-foreground">Host Notified</Label>
                     <div className="flex items-center gap-2">
-                      <Webhook className="h-4 w-4 text-green-600" />
                       <span className="text-sm font-medium text-green-700">
                         {visitorData?.hostEmail}
                       </span>
@@ -202,23 +200,13 @@ export default function CheckInPage() {
               </CardContent>
             </Card>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex justify-center">
               <Button 
-                variant="outline" 
                 onClick={handleNewScan}
-                className="flex-1"
+                className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-full px-8 py-3"
                 size="lg"
               >
-                <Scan className="h-4 w-4 mr-2" />
                 Check In Another Visitor
-              </Button>
-              <Button 
-                onClick={handleBackHome}
-                className="flex-1"
-                size="lg"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
               </Button>
             </div>
           </div>
@@ -227,9 +215,8 @@ export default function CheckInPage() {
           <div className="space-y-6">
             {/* Visitor Info Card */}
             <Card className="border-blue-200">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-blue-600" />
+              <CardHeader>
+                <CardTitle>
                   Scanned Visitor Information
                 </CardTitle>
               </CardHeader>
@@ -246,7 +233,6 @@ export default function CheckInPage() {
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-muted-foreground">Company</Label>
                     <div className="flex items-center gap-2">
-                      <Building className="h-4 w-4 text-muted-foreground" />
                       <span className="font-medium text-lg">{visitorData.visitorCompany}</span>
                     </div>
                   </div>
@@ -303,17 +289,14 @@ export default function CheckInPage() {
             {/* Error Display */}
             {webhookError && (
               <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
                 <AlertDescription className="text-sm">
                   ❌ Failed to send check-in notification: {webhookError}
                   <div className="mt-2">
                     <Button
-                      variant="outline"
-                      size="sm"
                       onClick={retryCheckIn}
-                      className="mr-2"
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full px-4 py-2 mr-2"
+                      size="sm"
                     >
-                      <Webhook className="h-3 w-3 mr-1" />
                       Retry
                     </Button>
                     <span className="text-xs text-muted-foreground">
@@ -327,29 +310,25 @@ export default function CheckInPage() {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Button 
-                variant="outline" 
                 onClick={handleNewScan}
-                className="flex-1"
+                className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-full px-6 py-3"
                 disabled={isSubmitting}
                 size="lg"
               >
-                <Scan className="h-4 w-4 mr-2" />
                 Scan Different Code
               </Button>
               <Button 
                 onClick={handleCheckIn}
-                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-full px-6 py-3"
                 disabled={isSubmitting}
                 size="lg"
               >
                 {isSubmitting ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                     Sending Notification...
                   </>
                 ) : (
                   <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
                     Complete Check-In
                   </>
                 )}
@@ -362,8 +341,7 @@ export default function CheckInPage() {
             {/* Scanner Card */}
             <Card className="border-2 border-dashed border-blue-200">
               <CardHeader className="text-center">
-                <CardTitle className="flex items-center justify-center gap-2 text-xl">
-                  <Scan className="h-6 w-6 text-blue-600" />
+                <CardTitle className="text-xl">
                   QR Code Scanner
                 </CardTitle>
                 <p className="text-muted-foreground">
@@ -377,24 +355,7 @@ export default function CheckInPage() {
                 />
               </CardContent>
             </Card>
-            
-            {/* Instructions */}
-            <Card className="bg-blue-50 border-blue-200">
-              <CardContent className="pt-6">
-                <div className="text-center space-y-3">
-                  <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full">
-                    <Scan className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <h3 className="font-semibold text-blue-900">How to Check In</h3>
-                  <div className="text-sm text-blue-800 space-y-2">
-                    <p>1. Ask the visitor to show their QR code</p>
-                    <p>2. Position the QR code within the camera frame above</p>
-                    <p>3. Add optional identification notes if needed</p>
-                    <p>4. Complete check-in to automatically notify the host</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+
           </div>
         )}
       </div>
