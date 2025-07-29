@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   title: "Visitor Check-In System",
   description: "Professional QR code-based visitor management solution with automated notifications",
   keywords: "visitor management, QR code, check-in system, guest services, professional",
+  icons: {
+    icon: '/scan.jpg',
+    shortcut: '/scan.jpg',
+    apple: '/scan.jpg',
+  },
 };
 
 export default function RootLayout({
