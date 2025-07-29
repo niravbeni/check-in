@@ -3,9 +3,5 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "npm install",
-  "regions": ["sfo1"],
-  "env": {
-    "NEXT_PUBLIC_ZAPIER_QR_WEBHOOK_URL": "@zapier-qr-webhook-url",
-    "NEXT_PUBLIC_ZAPIER_CHECKIN_WEBHOOK_URL": "@zapier-checkin-webhook-url"
-  }
+  "regions": ["sfo1"]
 } 
