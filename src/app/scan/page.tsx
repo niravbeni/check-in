@@ -35,6 +35,12 @@ export default function CheckInPage() {
   const handleCheckIn = async () => {
     if (!visitorData) return
 
+    // Validate required fields
+    if (!locationNotes.trim()) {
+      toast.error("Please provide location and seating information")
+      return
+    }
+
     try {
       setIsSubmitting(true)
       setWebhookError("")
@@ -251,11 +257,11 @@ export default function CheckInPage() {
               </CardContent>
             </Card>
 
-            {/* Optional Notes */}
+            {/* Required Notes */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Additional Information (Optional)</CardTitle>
-                <p className="text-sm text-muted-foreground">Add notes to help the host identify and locate the visitor</p>
+                <CardTitle className="text-lg">Additional Information</CardTitle>
+                <p className="text-sm text-muted-foreground">Location information is required. Identification notes are optional but helpful.</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -273,7 +279,7 @@ export default function CheckInPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="location" className="text-sm font-medium">
-                    Location & Seating
+                    Location & Seating *
                   </Label>
                   <Input
                     id="location"
