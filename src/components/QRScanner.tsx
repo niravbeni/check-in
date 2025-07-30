@@ -131,8 +131,20 @@ export function QRScanner({ onScanSuccess, onScanError, className }: QRScannerPr
 
   const handleScanSuccess = async (decodedText: string, _result: Html5QrcodeResult) => {
     try {
-      // Parse the QR code data
-      const visitorData: VisitorData = JSON.parse(decodedText)
+      // Parse the QR code data (compact format)
+      const compactData = JSON.parse(decodedText)
+      
+      // Convert compact format back to full VisitorData format
+      const visitorData: VisitorData = {
+        id: compactData.id,
+        visitorName: compactData.n,
+        visitorCompany: compactData.c,
+        visitorEmail: compactData.e,
+        purpose: compactData.p,
+        hostName: compactData.hn,
+        hostEmail: compactData.he,
+        createdAt: new Date().toISOString() // Generate current timestamp for scanned data
+      }
       
       // Validate that it's a valid visitor data object
       if (!visitorData.id || !visitorData.visitorName || !visitorData.hostName || !visitorData.hostEmail) {

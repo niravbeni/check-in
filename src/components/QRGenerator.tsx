@@ -101,12 +101,21 @@ export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
       setIsGenerating(true)
       setError("")
       
-      // Create QR code data with visitor information
-      const qrData = JSON.stringify(visitorData)
+      // Create compact QR code data with essential information only
+      const compactData = {
+        id: visitorData.id,
+        n: visitorData.visitorName,
+        c: visitorData.visitorCompany, 
+        e: visitorData.visitorEmail,
+        p: visitorData.purpose,
+        hn: visitorData.hostName,
+        he: visitorData.hostEmail
+      }
+      const qrData = JSON.stringify(compactData)
       
-      // Generate QR code with high error correction and good size
+      // Generate QR code with minimal error correction for cleanest appearance
       const dataURL = await QRCode.toDataURL(qrData, {
-        errorCorrectionLevel: 'H',
+        errorCorrectionLevel: 'L',
         type: 'image/png',
         margin: 2,
         width: 300,
