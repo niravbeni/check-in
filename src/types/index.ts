@@ -4,6 +4,7 @@ export interface VisitorData {
   visitorCompany: string;
   visitorEmail: string;
   purpose: string;
+  hostName: string;
   hostEmail: string;
   createdAt: string;
 } 

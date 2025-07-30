@@ -20,6 +20,7 @@ const visitorFormSchema = z.object({
   visitorCompany: z.string().min(2, "Company name must be at least 2 characters"),
   visitorEmail: z.string().email("Please enter a valid visitor email address"),
   purpose: z.string().min(4, "Purpose must be at least 5 characters"),
+  hostName: z.string().min(2, "Host name must be at least 2 characters"),
   hostEmail: z.string().email("Please enter a valid host email address")
 })
 
@@ -37,6 +38,7 @@ export default function HomePage() {
       visitorCompany: "",
       visitorEmail: "",
       purpose: "",
+      hostName: "",
       hostEmail: ""
     }
   })
@@ -55,6 +57,7 @@ export default function HomePage() {
         visitorCompany: values.visitorCompany,
         visitorEmail: values.visitorEmail,
         purpose: values.purpose,
+        hostName: values.hostName,
         hostEmail: values.hostEmail,
         createdAt: new Date().toISOString()
       }
@@ -206,6 +209,25 @@ export default function HomePage() {
                               rows={3}
                               {...field}
                               disabled={isGenerating}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="hostName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Your Name (Host) *</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Jane Smith"
+                              {...field}
+                              disabled={isGenerating}
+                              className="h-11"
                             />
                           </FormControl>
                           <FormMessage />

@@ -45,6 +45,7 @@ export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
       formData.append('visitorCompany', visitorData.visitorCompany)
       formData.append('visitorEmail', visitorData.visitorEmail)
       formData.append('purpose', visitorData.purpose)
+      formData.append('hostName', visitorData.hostName)
       formData.append('hostEmail', visitorData.hostEmail)
       formData.append('createdAt', visitorData.createdAt)
       formData.append('visitorId', visitorData.id)
@@ -232,7 +233,7 @@ export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
           </div>
           <div className="bg-muted p-3 rounded-lg">
             <p className="text-sm"><strong>Purpose:</strong> {visitorData.purpose}</p>
-            <p className="text-sm mt-1"><strong>Host:</strong> {visitorData.hostEmail}</p>
+            <p className="text-sm mt-1"><strong>Host:</strong> {visitorData.hostName} ({visitorData.hostEmail})</p>
           </div>
         </div>
 

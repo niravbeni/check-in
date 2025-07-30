@@ -54,6 +54,7 @@ export default function CheckInPage() {
       formData.append('visitorCompany', visitorData.visitorCompany)
       formData.append('visitorEmail', visitorData.visitorEmail)
       formData.append('purpose', visitorData.purpose)
+      formData.append('hostName', visitorData.hostName)
       formData.append('hostEmail', visitorData.hostEmail)
       formData.append('visitorId', visitorData.id)
       
@@ -176,7 +177,7 @@ export default function CheckInPage() {
                     <Label className="text-sm text-muted-foreground">Host Notified</Label>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-green-700">
-                        {visitorData?.hostEmail}
+                        {visitorData?.hostName} ({visitorData?.hostEmail})
                       </span>
                     </div>
                   </div>

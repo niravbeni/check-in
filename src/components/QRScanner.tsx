@@ -135,7 +135,7 @@ export function QRScanner({ onScanSuccess, onScanError, className }: QRScannerPr
       const visitorData: VisitorData = JSON.parse(decodedText)
       
       // Validate that it's a valid visitor data object
-      if (!visitorData.id || !visitorData.visitorName || !visitorData.hostEmail) {
+      if (!visitorData.id || !visitorData.visitorName || !visitorData.hostName || !visitorData.hostEmail) {
         throw new Error("Invalid QR code format")
       }
 
