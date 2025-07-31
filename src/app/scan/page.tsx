@@ -56,13 +56,15 @@ export default function CheckInPage() {
       const formData = new FormData()
       
       // Visitor information
-      formData.append('visitorName', visitorData.visitorName)
-      formData.append('visitorCompany', visitorData.visitorCompany)
-      formData.append('visitorEmail', visitorData.visitorEmail)
-      formData.append('purpose', visitorData.purpose)
-      formData.append('hostName', visitorData.hostName)
-      formData.append('hostEmail', visitorData.hostEmail)
-      formData.append('visitorId', visitorData.id)
+          formData.append('visitorName', visitorData.visitorName)
+    formData.append('visitorCompany', visitorData.visitorCompany)
+    formData.append('visitorEmail', visitorData.visitorEmail)
+    formData.append('purpose', visitorData.purpose)
+    formData.append('hostName', visitorData.hostName)
+    formData.append('hostEmail', visitorData.hostEmail)
+    formData.append('meetingDate', visitorData.meetingDate)
+    formData.append('meetingTime', visitorData.meetingTime)
+    formData.append('visitorId', visitorData.id)
       
       // Check-in details
       formData.append('checkedInAt', new Date().toISOString())
@@ -251,6 +253,14 @@ export default function CheckInPage() {
                     <Label className="text-sm font-medium text-muted-foreground">Purpose of Visit</Label>
                                           <div className="bg-secondary border border-border p-4 rounded-lg">
                         <p className="text-secondary-foreground font-medium">{visitorData.purpose}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Scheduled Meeting</Label>
+                    <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg">
+                      <p className="text-primary font-medium">
+                        {new Date(visitorData.meetingDate).toLocaleDateString()} at {visitorData.meetingTime}
+                      </p>
                     </div>
                   </div>
                 </div>

@@ -41,14 +41,16 @@ export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
       const formData = new FormData()
       
       // Visitor information
-      formData.append('visitorName', visitorData.visitorName)
-      formData.append('visitorCompany', visitorData.visitorCompany)
-      formData.append('visitorEmail', visitorData.visitorEmail)
-      formData.append('purpose', visitorData.purpose)
-      formData.append('hostName', visitorData.hostName)
-      formData.append('hostEmail', visitorData.hostEmail)
-      formData.append('createdAt', visitorData.createdAt)
-      formData.append('visitorId', visitorData.id)
+          formData.append('visitorName', visitorData.visitorName)
+    formData.append('visitorCompany', visitorData.visitorCompany)
+    formData.append('visitorEmail', visitorData.visitorEmail)
+    formData.append('purpose', visitorData.purpose)
+    formData.append('hostName', visitorData.hostName)
+    formData.append('hostEmail', visitorData.hostEmail)
+    formData.append('meetingDate', visitorData.meetingDate)
+    formData.append('meetingTime', visitorData.meetingTime)
+    formData.append('createdAt', visitorData.createdAt)
+    formData.append('visitorId', visitorData.id)
       
       // QR Code data
       formData.append('qrCodeDataUrl', qrCodeDataUrl)
@@ -109,7 +111,9 @@ export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
         e: visitorData.visitorEmail,
         p: visitorData.purpose,
         hn: visitorData.hostName,
-        he: visitorData.hostEmail
+        he: visitorData.hostEmail,
+        md: visitorData.meetingDate,
+        mt: visitorData.meetingTime
       }
       const qrData = JSON.stringify(compactData)
       
@@ -243,6 +247,7 @@ export function QRGenerator({ visitorData, className }: QRGeneratorProps) {
           <div className="bg-muted p-3 rounded-lg">
             <p className="text-sm"><strong>Purpose:</strong> {visitorData.purpose}</p>
             <p className="text-sm mt-1"><strong>Host:</strong> {visitorData.hostName} ({visitorData.hostEmail})</p>
+            <p className="text-sm mt-1"><strong>Meeting:</strong> {new Date(visitorData.meetingDate).toLocaleDateString()} at {visitorData.meetingTime}</p>
           </div>
         </div>
 

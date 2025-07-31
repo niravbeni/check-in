@@ -1,5 +1,316 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "react-day-picker/dist/style.css";
+
+/* Custom calendar styles to fix layout issues */
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: hsl(var(--primary));
+  --rdp-background-color: hsl(var(--background));
+  --rdp-accent-color-dark: hsl(var(--primary));
+  --rdp-background-color-dark: hsl(var(--background));
+  margin: 0;
+  padding: 16px;
+}
+
+.rdp-months {
+  display: flex;
+  flex-direction: column;
+}
+
+.rdp-month {
+  width: 100%;
+}
+
+.rdp-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rdp-head_row,
+.rdp-row {
+  display: flex;
+  width: 100%;
+}
+
+.rdp-head_row {
+  margin-bottom: 8px;
+}
+
+.rdp-row {
+  margin-bottom: 4px;
+}
+
+.rdp-head_cell,
+.rdp-cell {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.rdp-head_cell {
+  font-size: 0.875rem;
+  font-weight: normal;
+  color: hsl(var(--muted-foreground));
+}
+
+.rdp-day {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: normal;
+  border: none !important;
+  background: transparent;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+}
+
+.rdp-day:hover {
+  background-color: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+  transform: scale(1.05);
+  font-weight: 500;
+}
+
+
+
+/* Solid pink block for selected dates - comprehensive targeting */
+.rdp-day_selected,
+.rdp-day[aria-selected="true"],
+.rdp-button_reset[aria-selected="true"],
+.rdp [aria-selected="true"],
+button[aria-selected="true"],
+.rdp-months button[aria-selected="true"],
+.rdp-table button[aria-selected="true"] {
+  background-color: hsl(var(--primary)) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Hover effect for selected dates */
+.rdp-day_selected:hover,
+.rdp-day[aria-selected="true"]:hover,
+.rdp-button_reset[aria-selected="true"]:hover,
+.rdp [aria-selected="true"]:hover,
+button[aria-selected="true"]:hover,
+.rdp-months button[aria-selected="true"]:hover,
+.rdp-table button[aria-selected="true"]:hover {
+  background-color: hsl(var(--primary)) !important;
+  color: white !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.4) !important;
+  border-radius: 8px !important;
+}
+
+.rdp-day_today {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+  font-weight: 600;
+  border: none !important;
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3);
+}
+
+.rdp-day_today:hover {
+  background-color: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary));
+  transform: scale(1.05);
+}
+
+/* When today is selected, it should look the same as any selected date */
+.rdp-day_today[aria-selected="true"] {
+  background-color: hsl(var(--primary)) !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 700 !important;
+}
+
+.rdp-day_outside {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.5;
+}
+
+.rdp-day_outside:hover {
+  background-color: hsl(var(--muted) / 0.5);
+  color: hsl(var(--muted-foreground));
+  transform: none;
+}
+
+.rdp-day_disabled {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.rdp-day_disabled:hover {
+  background-color: transparent !important;
+  color: hsl(var(--muted-foreground)) !important;
+  transform: none !important;
+  cursor: not-allowed;
+}
+
+/* Focus states for accessibility */
+.rdp-day:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--ring));
+  background-color: hsl(var(--primary) / 0.1);
+}
+
+/* Focus states */
+.rdp-day_selected:focus-visible,
+.rdp-day[aria-selected="true"]:focus-visible,
+button[aria-selected="true"]:focus-visible {
+  box-shadow: 0 0 0 3px white, 0 0 0 5px hsl(var(--primary)) !important;
+  outline: none !important;
+}
+
+/* Ultra-specific override - this MUST work */
+.rdp .rdp-months .rdp-month .rdp-table .rdp-tbody .rdp-row .rdp-cell button.rdp-day_selected,
+.rdp .rdp-months .rdp-month .rdp-table .rdp-tbody .rdp-row .rdp-cell button[aria-selected="true"] {
+  background-color: hsl(var(--primary)) !important;
+  color: white !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  border: none !important;
+}
+
+/* Test - make any button with data-selected work */
+button[data-selected="true"],
+.rdp button[data-selected="true"],
+.rdp-day[data-selected="true"] {
+  background-color: hsl(var(--primary)) !important;
+  color: white !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+}
+
+/* Direct Tailwind class targeting - this should definitely work */
+.rdp .bg-primary {
+  background-color: hsl(var(--primary)) !important;
+}
+
+.rdp .text-white {
+  color: white !important;
+}
+
+.rdp .font-bold {
+  font-weight: 700 !important;
+}
+
+/* Nuclear option - override ALL buttons in calendar when they have these classes */
+.rdp button.bg-primary,
+.rdp .bg-primary {
+  background-color: hsl(var(--primary)) !important;
+  color: white !important;
+  font-weight: bold !important;
+  border: none !important;
+  border-radius: 8px !important;
+}
+
+/* Date-time picker styling - ensure selected time buttons use pink */
+.date-time-picker button[data-state="open"],
+.date-time-picker button[aria-pressed="true"],
+.date-time-picker button[variant="default"] {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+/* Ensure scroll areas work smoothly */
+.date-time-picker .scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+
+.date-time-picker .scroll-area::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.date-time-picker .scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.date-time-picker .scroll-area::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--border));
+  border-radius: 3px;
+}
+
+.date-time-picker .scroll-area::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--border));
+}
+
+.rdp-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rdp-nav_button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid hsl(var(--border));
+  background: transparent;
+  color: hsl(var(--foreground));
+  opacity: 0.5;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rdp-nav_button:hover {
+  opacity: 1;
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.rdp-nav_button_previous {
+  position: absolute;
+  left: 4px;
+}
+
+.rdp-nav_button_next {
+  position: absolute;
+  right: 4px;
+}
+
+.rdp-nav_button_previous::before {
+  content: "‹";
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.rdp-nav_button_next::before {
+  content: "›";
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.rdp-caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 0 0 20px 0;
+  margin-bottom: 8px;
+}
+
+.rdp-caption_label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
 
 @custom-variant dark (&:is(.dark *));
 

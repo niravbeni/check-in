@@ -143,11 +143,13 @@ export function QRScanner({ onScanSuccess, onScanError, className }: QRScannerPr
         purpose: compactData.p,
         hostName: compactData.hn,
         hostEmail: compactData.he,
+        meetingDate: compactData.md,
+        meetingTime: compactData.mt,
         createdAt: new Date().toISOString() // Generate current timestamp for scanned data
       }
       
       // Validate that it's a valid visitor data object
-      if (!visitorData.id || !visitorData.visitorName || !visitorData.hostName || !visitorData.hostEmail) {
+      if (!visitorData.id || !visitorData.visitorName || !visitorData.hostName || !visitorData.hostEmail || !visitorData.meetingDate || !visitorData.meetingTime) {
         throw new Error("Invalid QR code format")
       }
 

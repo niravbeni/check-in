@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { DateTimePicker } from "@/components/ui/date-time-picker"
 import { QRGenerator } from "@/components/QRGenerator"
 import { VisitorData } from "@/types"
 import { toast } from "sonner"
@@ -29,6 +30,7 @@ type VisitorFormValues = z.infer<typeof visitorFormSchema>
 export default function HomePage() {
   const [visitorData, setVisitorData] = useState<VisitorData | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [meetingDateTime, setMeetingDateTime] = useState<Date | undefined>()
   const router = useRouter()
 
   const form = useForm<VisitorFormValues>({
@@ -47,6 +49,12 @@ export default function HomePage() {
     try {
       setIsGenerating(true)
       
+      // Validate meeting date and time
+      if (!meetingDateTime) {
+        toast.error("Please select a meeting date and time")
+        return
+      }
+      
       // Generate unique ID for the visitor
       const visitorId = `visitor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
       
@@ -59,6 +67,8 @@ export default function HomePage() {
         purpose: values.purpose,
         hostName: values.hostName,
         hostEmail: values.hostEmail,
+        meetingDate: meetingDateTime.toISOString(),
+        meetingTime: meetingDateTime.toTimeString().slice(0, 5), // Format as HH:MM
         createdAt: new Date().toISOString()
       }
 
@@ -76,6 +86,7 @@ export default function HomePage() {
 
   const handleStartOver = () => {
     setVisitorData(null)
+    setMeetingDateTime(undefined)
     form.reset()
   }
 
@@ -254,7 +265,14 @@ export default function HomePage() {
                         </FormItem>
                       )}
                     />
-                  </div>
+
+                    {/* Meeting Date and Time */}
+                    <DateTimePicker
+                      date={meetingDateTime}
+                      onDateTimeChange={setMeetingDateTime}
+                      disabled={isGenerating}
+                    />
+                                    </div>
 
                   {/* Submit Button */}
                   <Button 
